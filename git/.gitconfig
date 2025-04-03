@@ -1,27 +1,13 @@
 [user]
-	name = Darryl Abbate
-	email = darrylabbate@gmail.com
-	signingkey = A03538CDABBA7E00
-[color]
-	ui = true
-[commit]
-	gpgsign = true
+  name = Bobby Matson
+  email = your@email.com
+
+[alias]
+  co = checkout
+  br = branch
+  ci = commit
+  st = status
+  lg = log --oneline --graph --all
+
 [core]
-	excludesfile = ~/.gitignore_global
-	ignorecase = true
-	pager = diff-so-fancy | less --tabs=2 -RFX
-[credential]
-	helper = osxkeychain
-[pull]
-	rebase = true
-[init]
-	defaultBranch = master
-[tag]
-	gpgSign = true
-[filter "lfs"]
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
-	required = true
-[push]
-	autoSetupRemote = true
+  editor = vim

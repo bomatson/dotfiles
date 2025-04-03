@@ -1,0 +1,7 @@
+export EDITOR=vim
+export VISUAL=vim
+export PATH="$HOME/bin:$PATH"
+export HISTSIZE=10000
+export HISTCONTROL=ignoredups:erasedups
+export FZF_DEFAULT_COMMAND="fd --type f"
+[ -f ~/.fzf.bash ] && source ~/.fzf.bash
