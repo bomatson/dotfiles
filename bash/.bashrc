@@ -1,4 +1,8 @@
-# Source ~/.bash_profile in the event of a shell
-# looking for a .bashrc
+# Source custom bash prompt
+[ -f "$HOME/dotfiles/bash/dots/bash_prompt" ] && source "$HOME/dotfiles/bash/dots/bash_prompt"
 
-source ~/.bash_profile
+# Optional: Load custom aliases
+[ -f "$HOME/dotfiles/bash/dots/aliases" ] && source "$HOME/dotfiles/bash/dots/aliases"
+
+# Optional: Load custom functions
+[ -f "$HOME/dotfiles/bash/dots/functions" ] && source "$HOME/dotfiles/bash/dots/functions"

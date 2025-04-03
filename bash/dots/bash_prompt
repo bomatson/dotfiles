@@ -1,0 +1,13 @@
+parse_git_branch() {
+  git branch 2>/dev/null | sed -n '/\* /s///p'
+}
+
+parse_git_dirty() {
+  [[ -n "$(git status --porcelain 2>/dev/null)" ]] && echo "*"
+}
+
+CYAN="\[\033[1;36m\]"
+MAGENTA="\[\033[1;35m\]"
+RESET="\[\033[0m\]"
+
+export PS1="${CYAN}\w ${MAGENTA}\$(parse_git_branch)\$(parse_git_dirty)${RESET} \$ "
