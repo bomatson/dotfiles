@@ -12,3 +12,4 @@ MAGENTA="\[\033[1;35m\]"
 RESET="\[\033[0m\]"
 
 export PS1="🌀 ${BLUE}\w ${MAGENTA}\$(parse_git_branch)\$(parse_git_dirty)${RESET} → "
+
