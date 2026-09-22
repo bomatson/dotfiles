@@ -15,6 +15,14 @@ vim +PlugInstall +qall
 echo /opt/homebrew/bin/bash | sudo tee -a /etc/shells && chsh -s /opt/homebrew/bin/bash
 ```
 
+macOS defaults and iTerm colors, without the `sudo` lines (and without `LSQuarantine`, which turns off the downloaded-app warning on a managed machine):
+
+```bash
+grep -vE '^\s*sudo |LSQuarantine' macos/defaults.sh | bash        # Safari lines fail unless the terminal has Full Disk Access; ignore
+defaults write NSGlobalDomain AppleInterfaceStyle Dark          # user-level dark mode
+open macos/iterm/glacier-black.itermcolors                      # imports the preset; pick it under iTerm > Settings > Profiles > Colors
+```
+
 Skip `stow git`: `git/.gitconfig` still carries a placeholder email and would replace `~/.gitconfig` (work/personal `includeIf` setup lives there). Copy the aliases in by hand with `git config --global alias.<name> ...` instead.
 
 `bash/dots/local` holds machine hooks (`~/.secrets.env`, asdf shims, gcloud, fzf keybindings) that pair with [bomatson/claude-config](https://github.com/bomatson/claude-config) `install.sh`.
