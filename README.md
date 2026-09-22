@@ -20,7 +20,8 @@ macOS defaults and iTerm colors, without the `sudo` lines (and without `LSQuaran
 ```bash
 grep -vE '^\s*sudo |LSQuarantine' macos/defaults.sh | bash        # Safari lines fail unless the terminal has Full Disk Access; ignore
 osascript -e 'tell application "System Events" to tell appearance preferences to set dark mode to true'   # dark mode, live (defaults write alone needs a logout)
-open macos/iterm/glacier-black.itermcolors                      # imports the preset; pick it under iTerm > Settings > Profiles > Colors
+open macos/iterm/glacier-black-soft.itermcolors                 # imports the preset; pick it under iTerm > Settings > Profiles > Colors > Color Presets
+# glacier-black-soft = upstream Glacier Black with off-white text and a lighter blue (ANSI 4/12) so paths and `ls` dirs read on black
 # Quit iTerm before importing colors any other way; it rewrites its prefs on exit. With "separate light/dark colors" on, the preset lands in the Dark set only.
 ```
 
