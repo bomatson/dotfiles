@@ -2,6 +2,23 @@
 
 Files for configuring a terminal environment and other various system settings. Largely centered around macOS, as well as other Unix-like systems. See [Github does dotfiles](https://dotfiles.github.io) for more info
 
+## Work laptop (Kandji-managed Mac) quick path
+
+Do **not** run `make` on a managed machine: it runs `brew bundle` on the upstream Brewfile, changes the login shell with `sudo`, installs yabai/skhd, and ends in `softwareupdate -aiR`. Apply only the shell and vim pieces:
+
+```bash
+gh repo clone bomatson/dotfiles ~/dotfiles        # scripts hardcode $HOME/dotfiles
+brew install stow fzf fd fastfetch bash vim       # neofetch is archived in Homebrew; .bash_profile uses fastfetch
+cd ~/dotfiles && stow bash vim
+vim +PlugInstall +qall
+# optional: make Homebrew bash the login shell
+echo /opt/homebrew/bin/bash | sudo tee -a /etc/shells && chsh -s /opt/homebrew/bin/bash
+```
+
+Skip `stow git`: `git/.gitconfig` still carries a placeholder email and would replace `~/.gitconfig` (work/personal `includeIf` setup lives there). Copy the aliases in by hand with `git config --global alias.<name> ...` instead.
+
+`bash/dots/local` holds machine hooks (`~/.secrets.env`, asdf shims, gcloud, fzf keybindings) that pair with [bomatson/claude-config](https://github.com/bomatson/claude-config) `install.sh`.
+
 ## Installation
 
 ### `curl` method (easiest)

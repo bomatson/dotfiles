@@ -34,4 +34,4 @@ unset file
 # Ensure .bashrc is loaded in login shells
 [ -f ~/.bashrc ] && source ~/.bashrc
 
-neofetch
+command -v fastfetch >/dev/null && fastfetch   # neofetch is archived; fastfetch is the maintained replacement
