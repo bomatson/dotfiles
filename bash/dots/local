@@ -13,3 +13,7 @@ export PATH="$HOME/.asdf/shims:$PATH"
 # fzf keybindings + completion (brew fzf)
 [ -f /opt/homebrew/opt/fzf/shell/key-bindings.bash ] && source /opt/homebrew/opt/fzf/shell/key-bindings.bash
 [ -f /opt/homebrew/opt/fzf/shell/completion.bash ] && source /opt/homebrew/opt/fzf/shell/completion.bash
+
+# glab (charmbracelet/huh UI) emits true-color escapes that bypass the terminal palette, giving a harsh
+# indigo for prompts. With a 16-color TERM it downgrades to ANSI colors, which the iTerm preset controls.
+alias glab='COLORTERM= TERM=xterm glab'
