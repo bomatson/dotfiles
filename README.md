@@ -19,8 +19,9 @@ macOS defaults and iTerm colors, without the `sudo` lines (and without `LSQuaran
 
 ```bash
 grep -vE '^\s*sudo |LSQuarantine' macos/defaults.sh | bash        # Safari lines fail unless the terminal has Full Disk Access; ignore
-defaults write NSGlobalDomain AppleInterfaceStyle Dark          # user-level dark mode
+osascript -e 'tell application "System Events" to tell appearance preferences to set dark mode to true'   # dark mode, live (defaults write alone needs a logout)
 open macos/iterm/glacier-black.itermcolors                      # imports the preset; pick it under iTerm > Settings > Profiles > Colors
+# Quit iTerm before importing colors any other way; it rewrites its prefs on exit. With "separate light/dark colors" on, the preset lands in the Dark set only.
 ```
 
 Skip `stow git`: `git/.gitconfig` still carries a placeholder email and would replace `~/.gitconfig` (work/personal `includeIf` setup lives there). Copy the aliases in by hand with `git config --global alias.<name> ...` instead.
