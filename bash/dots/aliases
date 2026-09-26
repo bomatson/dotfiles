@@ -6,3 +6,6 @@ alias gd='git diff'
 alias gco='git checkout'
 alias gbr='git branch'
 alias gpo='git push origin'
+
+# Claude Code OS: launch main session as the chief-operator on Opus
+alias chief='claude --model claude-opus-4-8 --agent chief-operator'
