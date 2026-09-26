@@ -96,12 +96,10 @@ _ag_build_prompt() {
 
     PS1="${sky} ${pill} ${gitseg}${extra}\n${caret}❯${_AG_RESET} "
 
-    # iTerm2: tab title = folder, tab color = this project's accent (same as the pill),
-    # plus cwd for semantic history when shell integration is absent
+    # iTerm2: tab title = folder, plus cwd for semantic history when shell integration is absent.
+    # No tab color: iTerm2 uses the tab for the Claude Code status dot.
     if [[ $TERM_PROGRAM == iTerm.app ]]; then
         printf '\e]0;%s\a' "${PWD##*/}"
-        local r g b; IFS=';' read -r r g b <<< "$accent"
-        printf '\e]6;1;bg;red;brightness;%s\a\e]6;1;bg;green;brightness;%s\a\e]6;1;bg;blue;brightness;%s\a' "$r" "$g" "$b"
         [[ -z $ITERM_SHELL_INTEGRATION_INSTALLED ]] && printf '\e]7;file://%s%s\a' "$HOSTNAME" "$PWD"
     fi
     unset _AG_T0   # last: the DEBUG trap re-arms the timer on the user's next command
