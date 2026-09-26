@@ -1,6 +1,6 @@
 [user]
   name = Bobby Matson
-  email = your@email.com
+  email = bobby.matson@gmail.com
 
 [alias]
   co = checkout
@@ -11,3 +11,5 @@
 
 [core]
   editor = vim
+[init]
+  defaultBranch = main
