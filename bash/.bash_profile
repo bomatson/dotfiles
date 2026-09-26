@@ -15,6 +15,9 @@ fi
 
 export PATH=$HOME/.local/bin${PATH:+:$PATH}
 
+# Secrets live outside the repo
+[[ -r $HOME/.secrets ]] && source "$HOME/.secrets"
+
 # Search path for manual pages on macOS is deduced from $PATH
 # On Linux, appending a colon to $MANPATH prepends the value to the search path
 # See: manpath(1)
