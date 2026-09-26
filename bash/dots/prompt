@@ -47,7 +47,7 @@ _ag_build_prompt() {
     # 1) directory pill, colored by a stable hash of the project root
     local root=$PWD dir='\W'
     root=$(git rev-parse --show-toplevel 2>/dev/null) || root=$PWD
-    local sum=0 i; for (( i=0; i<${#root}; i++ )); do sum=$(( (sum * 31 + $(printf '%d' "'${root:i:1}")) & 0xffff )); done
+    local sum=0 i ord; for (( i=0; i<${#root}; i++ )); do printf -v ord '%d' "'${root:i:1}"; sum=$(( (sum * 31 + ord) & 0xffff )); done
     local slot=$(( sum % 6 )); local accent=${_AG_ACCENTS[$slot]}
     local pill="$(_ag_fg "$accent" $((slot+1)))${_AG_CAP_L}$(_ag_bg "$accent" $((slot+1)))$(_ag_fg "$AG_BG" 0) ${_AG_FOLDER} ${dir} ${_AG_RESET}$(_ag_fg "$accent" $((slot+1)))${_AG_CAP_R}${_AG_RESET}"
 
@@ -56,6 +56,7 @@ _ag_build_prompt() {
     local porcelain
     if porcelain=$(GIT_OPTIONAL_LOCKS=0 git status --porcelain=v1 -b --ignore-submodules=all 2>/dev/null); then
         local head=${porcelain%%$'\n'*}; head=${head#\#\# }
+        [[ $head == "No commits yet on "* ]] && head=${head#No commits yet on }
         local branch=${head%%...*}; branch=${branch%% *}
         local ahead='' behind=''
         [[ $head == *"ahead "* ]] && { ahead=${head#*ahead }; ahead=${ahead%%[],]*}; }
@@ -104,4 +105,4 @@ _ag_build_prompt() {
     fi
     unset _AG_T0   # last: the DEBUG trap re-arms the timer on the user's next command
 }
-PROMPT_COMMAND="_ag_build_prompt${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
+[[ $PROMPT_COMMAND == *_ag_build_prompt* ]] || PROMPT_COMMAND="_ag_build_prompt${PROMPT_COMMAND:+; $PROMPT_COMMAND}"

@@ -1,3 +1,6 @@
+# Prompt (also for non-login shells: tmux, ssh commands, nested bash)
+[ -f "$HOME/dotfiles/bash/dots/prompt" ] && source "$HOME/dotfiles/bash/dots/prompt"
+
 
 # Optional: Load custom aliases
 [ -f "$HOME/dotfiles/bash/dots/aliases" ] && source "$HOME/dotfiles/bash/dots/aliases"
