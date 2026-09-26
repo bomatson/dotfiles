@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Give Claude Code sessions their own look: switch the iTerm2 profile to
+# "Afterglow Claude" (deep-sea background) for the life of the session, then
+# switch back. No tab color: iTerm2 shows the Claude status dot there. Everything else about `claude` is unchanged.
+claude() {
+    # Only for an interactive iTerm2 session: the escapes go to the tty, so
+    # `out=$(claude -p ...)` and `claude ... | jq` stay clean.
+    if [[ $TERM_PROGRAM == iTerm.app && -z $TMUX && -t 1 ]]; then
+        printf '\e]1337;SetProfile=Afterglow Claude\a' > /dev/tty 2>/dev/null
+        command claude "$@"
+        local rc=$?
+        printf '\e]1337;SetProfile=Afterglow\a' > /dev/tty 2>/dev/null
+        return $rc
+    fi
+    command claude "$@"
+}

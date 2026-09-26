@@ -1,3 +1,108 @@
 #!/usr/bin/env bash
+# Afterglow prompt — whacky but WCAG-AAA readable. Works on bash 3.2 (macOS /bin/bash) and 5.x.
+# Every foreground color below is >= 7:1 on the Afterglow background (#1b1030)
+# and on the Afterglow Claude background (#0f1e22). Dim text (mist) is >= 4.5:1.
+# Shape carries meaning alongside color: glyphs mark git state and exit status,
+# so nothing depends on red-vs-green alone.
 
-PS1="\W \[$(tput -T xterm-256color bold)\]\$\[$(tput -T xterm-256color sgr0)\] "
+# ---- palette (truecolor) ----------------------------------------------------
+AG_BG='27;16;48'      AG_FG='232;226;242'  AG_VOID='42;29;69'
+AG_CORAL='255;125;162' AG_MINT='61;220;151' AG_HONEY='255;210;63'
+AG_SKY='125;164;255'   AG_ORCHID='225;128;255' AG_AQUA='46;230;200'
+AG_CHALK='232;226;242' AG_MIST='143;131;173'  AG_PEACH='255;154;118'
+AG_LIME='156;255;138'  AG_LEMON='255;242;117' AG_ICE='158;208;255'
+AG_PINK='255;163;224'  AG_GLACIER='140;245;255' AG_PAPER='253;250;255'
+
+if [[ $COLORTERM == truecolor || $COLORTERM == 24bit ]]; then
+    _ag_fg() { printf '\[\e[38;2;%sm\]' "$1"; }
+    _ag_bg() { printf '\[\e[48;2;%sm\]' "$1"; }
+else
+    # 256/16-color fallback: lean on the terminal's own ANSI slots (1..6 = the six accents)
+    _ag_fg() { printf '\[\e[3%sm\]' "$2"; }
+    _ag_bg() { printf '\[\e[4%sm\]' "$2"; }
+fi
+_AG_RESET='\[\e[0m\]'
+
+# The six accents, in ANSI slot order. A directory picks one by hash, so every
+# project keeps the same color for life.
+_AG_ACCENTS=("$AG_CORAL" "$AG_MINT" "$AG_HONEY" "$AG_SKY" "$AG_ORCHID" "$AG_AQUA")
+
+# ---- Nerd Font glyphs (FiraMono Nerd Font) ----------------------------------
+_AG_CAP_L=$''   # rounded left cap
+_AG_CAP_R=$''   # rounded right cap
+_AG_BRANCH=$''  # branch
+_AG_FOLDER=$''  # folder
+_AG_CLOCK=$''   # clock
+_AG_JOBS=$''    # bolt
+
+# ---- last-command timer -----------------------------------------------------
+_ag_timer_start() { _AG_T0=${_AG_T0:-$SECONDS}; }
+trap '_ag_timer_start' DEBUG
+
+# ---- build the prompt (runs once per prompt) --------------------------------
+_ag_build_prompt() {
+    local status=$?                       # must be first
+    local elapsed=$(( SECONDS - ${_AG_T0:-$SECONDS} ))
+
+    # 1) directory pill, colored by a stable hash of the project root
+    local root=$PWD dir='\W'
+    root=$(git rev-parse --show-toplevel 2>/dev/null) || root=$PWD
+    local sum=0 i ord; for (( i=0; i<${#root}; i++ )); do printf -v ord '%d' "'${root:i:1}"; sum=$(( (sum * 31 + ord) & 0xffff )); done
+    local slot=$(( sum % 6 )); local accent=${_AG_ACCENTS[$slot]}
+    local pill="$(_ag_fg "$accent" $((slot+1)))${_AG_CAP_L}$(_ag_bg "$accent" $((slot+1)))$(_ag_fg "$AG_BG" 0) ${_AG_FOLDER} ${dir} ${_AG_RESET}$(_ag_fg "$accent" $((slot+1)))${_AG_CAP_R}${_AG_RESET}"
+
+    # 2) git segment: one porcelain call, parsed in bash (no subshell per field)
+    local gitseg=''
+    local porcelain
+    if porcelain=$(GIT_OPTIONAL_LOCKS=0 git status --porcelain=v1 -b --ignore-submodules=all 2>/dev/null); then
+        local head=${porcelain%%$'\n'*}; head=${head#\#\# }
+        [[ $head == "No commits yet on "* ]] && head=${head#No commits yet on }
+        local branch=${head%%...*}; branch=${branch%% *}
+        local ahead='' behind=''
+        [[ $head == *"ahead "* ]] && { ahead=${head#*ahead }; ahead=${ahead%%[],]*}; }
+        [[ $head == *"behind "* ]] && { behind=${head#*behind }; behind=${behind%%[],]*}; }
+        local body=${porcelain#*$'\n'}; [[ $body == "$porcelain" ]] && body=''
+        local staged=0 dirty=0 untracked=0 line
+        while IFS= read -r line; do
+            [[ -z $line ]] && continue
+            [[ ${line:0:2} == '??' ]] && { ((untracked++)); continue; }
+            [[ ${line:0:1} != ' ' ]] && ((staged++))
+            [[ ${line:1:1} != ' ' ]] && ((dirty++))
+        done <<< "$body"
+        gitseg="$(_ag_fg "$AG_ORCHID" 5)${_AG_BRANCH} ${branch}"
+        (( staged ))    && gitseg+="$(_ag_fg "$AG_MINT" 2) +${staged}"
+        (( dirty ))     && gitseg+="$(_ag_fg "$AG_HONEY" 3) ~${dirty}"
+        (( untracked )) && gitseg+="$(_ag_fg "$AG_MIST" 7) ?${untracked}"
+        [[ $ahead ]]    && gitseg+="$(_ag_fg "$AG_SKY" 4) ↑${ahead}"
+        [[ $behind ]]   && gitseg+="$(_ag_fg "$AG_CORAL" 1) ↓${behind}"
+        gitseg+="${_AG_RESET} "
+    fi
+
+    # 3) extras: slow-command timer, background jobs, failed exit status
+    local extra=''
+    (( elapsed >= 3 )) && extra+="$(_ag_fg "$AG_MIST" 7)${_AG_CLOCK} ${elapsed}s${_AG_RESET} "
+    local njobs; njobs=$(jobs -rp | wc -l | tr -d ' ')
+    (( njobs )) && extra+="$(_ag_fg "$AG_HONEY" 3)${_AG_JOBS} ${njobs}${_AG_RESET} "
+    (( status )) && extra+="$(_ag_fg "$AG_CORAL" 1)✗ ${status}${_AG_RESET} "
+
+    # 4) time-of-day marker (shape changes, so it works without color)
+    local hour=$(( 10#$(date +%H) )) sky   # date, not printf %T: macOS /bin/bash is 3.2
+    if   (( hour >= 5  && hour < 10 )); then sky='🌅'
+    elif (( hour >= 10 && hour < 17 )); then sky='🔆'
+    elif (( hour >= 17 && hour < 21 )); then sky='🌇'
+    else sky='🌙'; fi
+
+    # 5) the prompt character: mint when the last command passed, coral when it failed
+    local caret; (( status )) && caret="$(_ag_fg "$AG_CORAL" 1)" || caret="$(_ag_fg "$AG_MINT" 2)"
+
+    PS1="${sky} ${pill} ${gitseg}${extra}\n${caret}❯${_AG_RESET} "
+
+    # iTerm2: tab title = folder, plus cwd for semantic history when shell integration is absent.
+    # No tab color: iTerm2 uses the tab for the Claude Code status dot.
+    if [[ $TERM_PROGRAM == iTerm.app ]]; then
+        printf '\e]0;%s\a' "${PWD##*/}"
+        [[ -z $ITERM_SHELL_INTEGRATION_INSTALLED ]] && printf '\e]7;file://%s%s\a' "$HOSTNAME" "$PWD"
+    fi
+    unset _AG_T0   # last: the DEBUG trap re-arms the timer on the user's next command
+}
+[[ $PROMPT_COMMAND == *_ag_build_prompt* ]] || PROMPT_COMMAND="_ag_build_prompt${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
